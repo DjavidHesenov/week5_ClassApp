@@ -1,6 +1,5 @@
 import React from 'react'
 import { NavLink } from 'react-router-dom'
-// import { IUser } from '../interfaces'
 import { authActions } from '../store/auth'
 import { withRouter } from 'react-router-dom'
 import { RouteComponentProps } from 'react-router'
@@ -30,10 +29,6 @@ class Login extends React.Component<MyProps, MyState> {
 
     submitHandler = () => {
         if (this.state.email && this.state.password) {
-            // const newLogin: IUser = {
-            //     email: email,
-            //     password: password
-            // }
             this.props.dispatch(login())
             this.props.history.push('/')
         }

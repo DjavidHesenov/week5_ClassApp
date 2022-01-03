@@ -1,40 +1,71 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import Landing from './components/Landing';
 import Login from './components/Login';
 import Forecast from './components/Forecast';
-import { BrowserRouter, Switch, Route, Redirect } from 'react-router-dom'; 
-import { useSelector, useDispatch } from 'react-redux';
+import { BrowserRouter, Switch, Route, Redirect } from 'react-router-dom';
 import { ILogin } from './interfaces';
 import { authActions } from './store/auth';
+import { RouteComponentProps } from 'react-router'
+import { connect } from 'react-redux'
 
-const App: React.FC = () => {
-  const isAuth = useSelector((state: any) => state.auth.isAuthenticated)
-  const dispatch = useDispatch()
+const { login, logout } = authActions
 
-  useEffect(() => {
+type MyProps = RouteComponentProps<PathParamsType> & {
+  someString: string,
+  dispatch: any,
+  isAuth: boolean
+}
 
+interface MyState { isAuth: boolean };
+
+type PathParamsType = {
+  param1: string,
+}
+
+
+class App extends React.Component<any, any> {
+
+  componentDidMount() {
     const saved = JSON.parse(localStorage.getItem('isAuth') || 'false') as ILogin[]
 
     if (saved) {
-      dispatch(authActions.login())
+      this.props.dispatch(login())
     } else {
-      dispatch(authActions.logout())
+      this.props.dispatch(logout())
     }
+  }
 
-  }, [dispatch])
+  componentDidUpdate(prevProps: MyProps, prevState: MyState) {
+    if (prevProps.isAuth !== this.props.isAuth) {
+      const saved = JSON.parse(localStorage.getItem('isAuth') || 'false') as ILogin[]
 
-  return (
-    <BrowserRouter>
-      <Switch>
-        <Route component={Landing} path="/" exact/>
-        {!isAuth && <Route component={Login} path="/login" exact/>}
-        {isAuth && <Route component={Forecast} path="/forecast" exact />}
-        <Route path="*" >
-          <Redirect to="/" />
+      if (saved) {
+        this.props.dispatch(login())
+      } else {
+        this.props.dispatch(logout())
+      }
+
+    }
+  }
+
+  render() {
+    return (
+      <BrowserRouter>
+        <Switch>
+          <Route component={Landing} path="/" exact />
+          {!this.props.isAuth && <Route component={Login} path="/login" exact />}
+          {this.props.isAuth && <Route component={Forecast} path="/forecast" exact />}
+          <Route path="*" >
+            <Redirect to="/" />
           </Route>
-      </Switch>
-    </BrowserRouter>
-  );
+        </Switch>
+      </BrowserRouter>
+    );
+  }
 }
 
-export default App;
+const mapStateToProps = (state: any) => ({
+  isAuth: state.auth.isAuthenticated
+});
+
+export default connect(mapStateToProps)(App)
